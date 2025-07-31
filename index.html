@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Meeting - AI赋能组会讨论</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="loading.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-users"></i> Vibe Meeting</h1>
+                <p>AI赋能的智能组会讨论平台</p>
+            </div>
+            <div class="room-info">
+                <span class="room-id" id="roomId">房间: meeting-001</span>
+                <button class="btn-secondary" onclick="copyRoomId()">
+                    <i class="fas fa-copy"></i> 复制房间号
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h3><i class="fas fa-comments"></i> 讨论记录</h3>
+                    <div class="ai-status">
+                        <span class="ai-indicator" id="aiStatus">
+                            <i class="fas fa-robot"></i> AI正在待命...
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="messages-container" id="messagesContainer">
+                    <!-- 消息将在这里动态添加 -->
+                </div>
+
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="输入您的消息... (按Enter发送，Shift+Enter换行)"
+                            rows="1"
+                        ></textarea>
+                        <button class="btn-primary" onclick="sendMessage()" id="sendButton">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="input-actions">
+                        <button class="btn-ask-ai" onclick="askAI()">
+                            <i class="fas fa-question-circle"></i> 询问AI
+                        </button>
+                        <button class="btn-summarize" onclick="generateSummary()">
+                            <i class="fas fa-file-alt"></i> 生成总结
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="participants-panel">
+                    <h3><i class="fas fa-user-friends"></i> 在线成员</h3>
+                    <div class="participants-list" id="participantsList">
+                        <!-- 参与者将在这里动态添加 -->
+                    </div>
+                </div>
+
+                <div class="ai-summary-panel">
+                    <h3><i class="fas fa-clipboard-list"></i> AI总结</h3>
+                    <div class="summary-content" id="summaryContent">
+                        <p class="empty-summary">讨论开始后，AI将为您生成智能总结...</p>
+                    </div>
+                    <button class="btn-export" onclick="exportSummary()">
+                        <i class="fas fa-download"></i> 导出总结
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 用户名设置对话框 -->
+    <div class="modal" id="usernameModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>欢迎加入会议</h3>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="usernameInput">您的姓名</label>
+                    <input 
+                        type="text" 
+                        id="usernameInput" 
+                        placeholder="请输入您的姓名"
+                        maxlength="20"
+                        autocomplete="off"
+                    />
+                </div>
+                
+                <div class="input-group">
+                    <label for="roomInput">房间号</label>
+                    <input 
+                        type="text" 
+                        id="roomInput" 
+                        placeholder="留空创建新房间"
+                        maxlength="20"
+                        autocomplete="off"
+                    />
+                    <small>已有房间号？输入即可加入讨论</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="createNewRoom()">新建房间</button>
+                <button class="btn-primary" onclick="setUsername()">加入会议</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 询问AI对话框 -->
+    <div class="modal" id="askAIModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>询问AI</h3>
+                <button class="modal-close" onclick="closeAskAIModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea 
+                    id="aiQuestionInput" 
+                    placeholder="请输入您的问题..."
+                    rows="3"
+                ></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAskAIModal()">取消</button>
+                <button class="btn-primary" onclick="submitAIQuestion()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
