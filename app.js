@@ -531,6 +531,9 @@ async function generateSummary() {
     
     if (isAIProcessing) return;
     
+    // 显示加载状态
+    summaryContent.innerHTML = '<p class="loading-summary">AI正在分析讨论内容，请稍候...</p>';
+    
     isAIProcessing = true;
     updateAIStatus('AI正在生成总结...', 'processing');
     
