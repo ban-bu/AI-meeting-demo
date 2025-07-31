@@ -334,6 +334,19 @@ function renderMessage(message) {
     
     const isCurrentUser = message.userId === currentUserId;
     
+    let messageText;
+    if (message.isLoading) {
+        messageText = `
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `;
+    } else {
+        messageText = `<div class="message-text">${message.text}</div>`;
+    }
+    
     messageDiv.innerHTML = `
         <div class="message-avatar" style="background-color: ${avatarColor}">${avatarContent}</div>
         <div class="message-content">
@@ -343,7 +356,7 @@ function renderMessage(message) {
                 </span>
                 <span class="message-time">${message.time}</span>
             </div>
-            <div class="message-text">${message.text}</div>
+            ${messageText}
         </div>
     `;
     
@@ -486,6 +499,26 @@ async function submitAIQuestion() {
     isAIProcessing = true;
     updateAIStatus('AI正在思考...', 'processing');
     
+    // 添加AI加载消息
+    const loadingMessage = {
+        type: 'ai',
+        text: 'AI正在思考中...',
+        author: 'AI助手',
+        userId: 'ai-assistant',
+        time: new Date().toLocaleTimeString('zh-CN', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        }),
+        isLoading: true
+    };
+    
+    messages.push(loadingMessage);
+    renderMessage(loadingMessage);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // 获取加载消息的DOM元素
+    const loadingElement = messagesContainer.lastElementChild;
+    
     try {
         const context = [
             {
@@ -519,18 +552,53 @@ async function submitAIQuestion() {
         const data = await response.json();
         const aiAnswer = data.choices[0].message.content;
         
-        addMessage('ai', aiAnswer, 'AI助手');
+        // 更新加载消息为实际回答
+        loadingMessage.text = aiAnswer;
+        loadingMessage.isLoading = false;
+        
+        // 更新DOM内容
+        const messageTextElement = loadingElement.querySelector('.message-text');
+        if (messageTextElement) {
+            messageTextElement.innerHTML = aiAnswer;
+        } else {
+            // 如果没有message-text元素，创建新的
+            const contentDiv = loadingElement.querySelector('.message-content');
+            const typingIndicator = contentDiv.querySelector('.typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+            const messageText = document.createElement('div');
+            messageText.className = 'message-text';
+            messageText.innerHTML = aiAnswer;
+            contentDiv.appendChild(messageText);
+        }
+        
         updateAIStatus('AI正在监听...', 'listening');
         
     } catch (error) {
         console.error('AI问答失败:', error);
         
-        // 模拟AI回答（降级方案）
-        setTimeout(() => {
-            const mockAnswer = generateMockAIAnswer(question);
-            addMessage('ai', mockAnswer, 'AI助手');
-            updateAIStatus('AI正在监听...', 'listening');
-        }, 1000);
+        // 更新为错误消息
+        loadingMessage.text = '抱歉，AI服务暂时不可用，请稍后重试。';
+        loadingMessage.isLoading = false;
+        
+        // 更新DOM内容
+        const messageTextElement = loadingElement.querySelector('.message-text');
+        if (messageTextElement) {
+            messageTextElement.innerHTML = '抱歉，AI服务暂时不可用，请稍后重试。';
+        } else {
+            const contentDiv = loadingElement.querySelector('.message-content');
+            const typingIndicator = contentDiv.querySelector('.typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+            const messageText = document.createElement('div');
+            messageText.className = 'message-text';
+            messageText.innerHTML = '抱歉，AI服务暂时不可用，请稍后重试。';
+            contentDiv.appendChild(messageText);
+        }
+        
+        updateAIStatus('AI正在监听...', 'listening');
     } finally {
         isAIProcessing = false;
     }
