@@ -235,7 +235,32 @@ function closeUsernameModal() {
 // 创建新房间
 function createNewRoom() {
     roomInput.value = ''; // 清空房间号输入
-    setUsername(); // 直接创建新房间并加入
+    
+    // 强制重置房间ID，创建全新的房间
+    roomId = 'meeting-' + Math.random().toString(36).substr(2, 6);
+    const newUrl = window.location.pathname + '?room=' + roomId;
+    window.history.replaceState({path: newUrl}, '', newUrl);
+    document.getElementById('roomId').textContent = `房间: ${roomId}`;
+    
+    // 重置当前会话状态
+    messages = [];
+    participants = [];
+    
+    // 清空消息容器
+    messagesContainer.innerHTML = '';
+    
+    // 重置总结内容
+    summaryContent.innerHTML = '<p class="empty-summary">讨论开始后，AI将为您生成智能总结...</p>';
+    
+    // 如果已设置用户名，直接加入新房间
+    if (currentUsername) {
+        usernameModal.style.display = 'none';
+        loadRoomData();
+        addCurrentUserToParticipants();
+    } else {
+        // 否则显示用户名设置对话框
+        setUsername();
+    }
 }
 
 // 发送消息
@@ -662,16 +687,18 @@ ${summaryText}
 }
 
 // 复制房间号
-function copyRoomId() {
+function copyRoomId(event) {
     const roomId = document.getElementById('roomId').textContent.replace('房间: ', '');
-    const fullUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-    navigator.clipboard.writeText(fullUrl).then(() => {
-        const btn = event.target;
+    navigator.clipboard.writeText(roomId).then(() => {
+        const btn = event.target.tagName === 'BUTTON' ? event.target : event.target.closest('button');
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
         setTimeout(() => {
             btn.innerHTML = originalText;
         }, 2000);
+    }).catch(err => {
+        console.error('复制失败:', err);
+        alert('复制失败，请手动复制房间号');
     });
 }
 
